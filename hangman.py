@@ -3,6 +3,7 @@ import codecs
 id_student = "Paul Ciurea"
 input_file = codecs.open("cuvinte_de_verificat.txt", "r", "utf-8")  # input file
 output_file = codecs.open("date_iesire_timestamp.txt", "w", "utf-8")
+
 all_words = codecs.open("dictionar.txt", "r", "utf-8").read().split("\r\n")  # array with all words from language
 chars = "aăâàäbcçdeêèfghiîjklmnñoöpqrsștțuüvwxyz"  # all chars from dictionary file
 
