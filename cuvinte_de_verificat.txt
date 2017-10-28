@@ -1,0 +1,4 @@
+1001;ST*D**T;STUDENT
+1002;B**S*;BURSA
+1003;S**R**********S*******;STERNOCLEIDOMASTOIDIAN
+1004;Bi*u**r**;Bijuterie
