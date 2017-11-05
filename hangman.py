@@ -5,7 +5,7 @@ input_file = codecs.open("cuvinte_de_verificat.txt", "r", "utf-8")  # input file
 output_file = codecs.open("date_iesire_timestamp.txt", "w", "utf-8")
 
 all_words = codecs.open("dictionar.txt", "r", "utf-8").read().split("\r\n")  # array with all words from language
-chars = "aăâàäbcçdeêèfghiîjklmnñoöpqrsștțuüvwxyz"  # all chars from dictionary file
+chars = "aăâàåäbcçdeêéèfghiîjklmnñoöpqrsștţțuüùvwxyz"  # all chars from dictionary file
 
 
 def patter_match(word1, word2):  # match the pattern of 1st word with 2nd word
@@ -47,7 +47,8 @@ def most_used_letters(word_array):  # returns a ordered list of most used letter
         dic[c] = 0
     for word in word_array:
         for ch in word:
-            dic[ch] += 1
+            if ch != '\ufeff':
+                dic[ch] += 1
     return dic
 
 
@@ -73,6 +74,12 @@ class Joc:
         return self.cuvant_corect == cuvant_compus
 
     def unde_se_potriveste_litera(self, litera):
+        print("Verific litera " + litera)
+        print(list(litera))
+        if litera == 'ţ':
+            print("aici crapa")
+        else:
+            print("II OK")
         self.tries += 1
         letter_positions = []
         for x in range(0, len(self.cuvant_corect)):
@@ -83,8 +90,7 @@ class Joc:
     def solve(self):
         trimmed_list = []
         used_letters = []
-        used_letters = list(set([x for x in self.cuvant
-                                 if x not in used_letters and x != "*"]))
+        used_letters = list(set([x for x in self.cuvant if x not in used_letters and x != "*"]))
         # makes a list of knows lettes excluding char "*"
         lungime_cuvant = len(self.cuvant)  # word len
         possible_words = [x for x in all_words if
@@ -94,8 +100,15 @@ class Joc:
             trimmed_list = [x for x in possible_words
                             if patter_match(self.cuvant, x)]  # trim possible words with those that match pattern
             if len(trimmed_list) == 1:  # if one result is left then we found the word
-                self.cuvant = trimmed_list[0]
+                if self.verifica_cuvantul(trimmed_list[0]):
+                    self.solved = True
+                    break
+            if len(trimmed_list) == 0:
+                #if word is not in dictonary then use alg n.2
+                print("Cuvantul "+self.cuvant_corect+" nu apare in dex:" + self.cuvant)
+                self.solve2()
                 break
+
             # else pick the most probable letter
             letter = most_probable_letter(trimmed_list, used_letters)
             used_letters.append(letter)  # mark picked word as used
@@ -103,8 +116,19 @@ class Joc:
             if len(letter_positions) != 0:  # if there are positions where selected letter can be added then add it
                 self.add_letter(letter, letter_positions)
 
-        if self.verifica_cuvantul(trimmed_list[0]):
-            self.solved = True
+    def solve2(self):
+        letter_positions = []
+        used_letters = []
+        used_letters = list(set([x for x in self.cuvant
+                                 if x not in used_letters and x != "*"]))
+        while "*" in self.cuvant:
+            letter = most_probable_letter(all_words, used_letters)
+            print(letter)
+            used_letters.append(letter)  # mark picked word as used
+            letter_positions = self.unde_se_potriveste_litera(letter)
+            print(letter_positions)
+            if len(letter_positions) != 0:  # if there are positions where selected letter can be added then add it
+                self.add_letter(letter, letter_positions)
 
 
 def main():
