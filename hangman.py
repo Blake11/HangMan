@@ -1,10 +1,12 @@
 import codecs
 
+
 id_student = "Paul Ciurea"
 input_file = codecs.open("cuvinte_de_verificat.txt", "r", "utf-8")  # input file
-output_file = codecs.open("date_iesire_timestamp.txt", "w", "utf-8")
+output_file = codecs.open("date_iesire_timestamp.txt", "w", "utf-8")  # results file
 
-all_words = codecs.open("dictionar.txt", "r", "utf-8").read().split("\r\n")  # array with all words from language
+
+all_words = codecs.open("dictionar.txt", "r", "utf-8").read().split("\r\n")  # array with all words from dictionary
 chars = "aăâàåäbcçdeêéèfghiîjklmnñoöpqrsștţțuüùvwxyz"  # all chars from dictionary file
 
 
@@ -23,32 +25,40 @@ def read_games():
         for game in lines.split(";"):
             lista.append(game.replace("\r\n", ""))
         games.append(Joc(lista[0], lista[1].lower(), lista[2].lower()))
+
     # returns a list of game objects from the file
     return games
 
 
 def most_probable_letter(trimmed_words, known_letters):
+
     picked_letter = ''
     possible_letters = most_used_letters(trimmed_words)  # make a map of most used letters from trimmed words
     max_occurances = 0
+
     for x in known_letters:  # from possible latters take out those who are already used
         if x != "":
             del possible_letters[x]
+
     for key, value in possible_letters.items():
         if possible_letters[key] > max_occurances:
             max_occurances = possible_letters[key]
             picked_letter = key
+
     return picked_letter  # return the letter with most occurances
 
 
 def most_used_letters(word_array):  # returns a ordered list of most used letter in a array of words
     dic = {}  # dictionary of letters and no occurences
+
     for c in chars:  # init keys
         dic[c] = 0
+
     for word in word_array:
         for ch in word:
             if ch != '\ufeff':
                 dic[ch] += 1
+
     return dic
 
 
@@ -65,7 +75,7 @@ class Joc:
         self.cuvant_corect = cuvant_corect
 
     def add_letter(self, letter, pozitii_litere):  # adds one or more letter at givel positions
-        new_word = list(self.cuvant)
+        new_word = list(self.cuvant)  # strings cant be modified so a new string must be made
         for poz in pozitii_litere:
             new_word[poz] = letter
         self.cuvant = "".join(new_word)
@@ -74,38 +84,39 @@ class Joc:
         return self.cuvant_corect == cuvant_compus
 
     def unde_se_potriveste_litera(self, litera):
-        print("Verific litera " + litera)
-        print(list(litera))
-        if litera == 'ţ':
-            print("aici crapa")
-        else:
-            print("II OK")
         self.tries += 1
         letter_positions = []
         for x in range(0, len(self.cuvant_corect)):
             if self.cuvant_corect[x] == litera:
                 letter_positions.append(x)
+            # return a array or positions
         return letter_positions
 
     def solve(self):
+
         trimmed_list = []
         used_letters = []
-        used_letters = list(set([x for x in self.cuvant if x not in used_letters and x != "*"]))
-        # makes a list of knows lettes excluding char "*"
         lungime_cuvant = len(self.cuvant)  # word len
-        possible_words = [x for x in all_words if
-                          len(x) == lungime_cuvant]  # possible words which have same len as given word
+
+        used_letters = list(set([x for x in self.cuvant if x not in used_letters and x != "*"]))
+        # makes a list of knows letters excluding char "*"
+
+        possible_words = [x for x in all_words if len(x) == lungime_cuvant]
+        # possible words which have same len as given word
+
         while len(trimmed_list) != 1:
             # while there are more than 1 result we need to cut those that doesn't match patter
-            trimmed_list = [x for x in possible_words
-                            if patter_match(self.cuvant, x)]  # trim possible words with those that match pattern
+
+            trimmed_list = [x for x in possible_words if patter_match(self.cuvant, x)]
+            # trim possible words with those that match pattern
+
             if len(trimmed_list) == 1:  # if one result is left then we found the word
                 if self.verifica_cuvantul(trimmed_list[0]):
                     self.solved = True
                     break
+
             if len(trimmed_list) == 0:
-                #if word is not in dictonary then use alg n.2
-                print("Cuvantul "+self.cuvant_corect+" nu apare in dex:" + self.cuvant)
+                # if word is not in dictonary then use alg n.2
                 self.solve2()
                 break
 
@@ -117,29 +128,38 @@ class Joc:
                 self.add_letter(letter, letter_positions)
 
     def solve2(self):
-        letter_positions = []
+        k = 0  # index of letter array
         used_letters = []
-        used_letters = list(set([x for x in self.cuvant
-                                 if x not in used_letters and x != "*"]))
-        while "*" in self.cuvant:
-            letter = most_probable_letter(all_words, used_letters)
-            print(letter)
-            used_letters.append(letter)  # mark picked word as used
+        used_letters = list(set([x for x in self.cuvant if x not in used_letters and x != "*"]))
+        # get a list of already known letters
+
+        letters = most_used_letters(all_words)  # make a map of most used letters
+        letters = sorted(letters, key=letters.get, reverse=True)  # sort them by n. of appearances
+        letters = [x for x in letters if x not in used_letters]  # delete letters already guessed
+
+        while "*" in self.cuvant:  # if there are * then there must be more letters to be guessed
+            letter = letters[k]  # get a letter
+            k += 1  # point to next letter
             letter_positions = self.unde_se_potriveste_litera(letter)
-            print(letter_positions)
+
             if len(letter_positions) != 0:  # if there are positions where selected letter can be added then add it
                 self.add_letter(letter, letter_positions)
+
+        if self.verifica_cuvantul(self.cuvant):  # if word matches then its solved
+            self.solved = True
 
 
 def main():
     games = read_games()
     total_tries = 0
+
     for game in games:
         game.solve()
         if game.solved:
             total_tries += game.tries
-    print("Nr total de jocuri " + str(len(games)))
-    print("Nr total de incercari: " + str(total_tries))
+
+    print("Nr total de jocuri: " + str(len(games)) + " ... nr total de incercari: " + str(total_tries))
+
     for game in games:
         if game.solved:
             print(str(game.id_joc) + " : " + str(game.tries) + " incercari")

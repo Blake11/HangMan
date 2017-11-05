@@ -2,4 +2,4 @@
 1002;B**S*;BURSA
 1003;S**R**********S*******;STERNOCLEIDOMASTOIDIAN
 1004;Bi*u**r**;Bijuterie
-1006;*********************;DEZINSTITUŢIONALIZARE
+1006;*********************;dezinstituționalizare
