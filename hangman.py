@@ -81,6 +81,7 @@ class Joc:
         self.cuvant = "".join(new_word)
 
     def verifica_cuvantul(self, cuvant_compus):
+        print(self.id_joc)
         return self.cuvant_corect == cuvant_compus
 
     def unde_se_potriveste_litera(self, litera):
@@ -103,10 +104,11 @@ class Joc:
 
         possible_words = [x for x in all_words if len(x) == lungime_cuvant]
         # possible words which have same len as given word
+        for letter in used_letters:
+            possible_words = [x for x in possible_words if x.count(letter) == self.cuvant.count(letter)]
 
         while len(trimmed_list) != 1:
             # while there are more than 1 result we need to cut those that doesn't match patter
-
             trimmed_list = [x for x in possible_words if patter_match(self.cuvant, x)]
             # trim possible words with those that match pattern
 
@@ -122,6 +124,8 @@ class Joc:
 
             # else pick the most probable letter
             letter = most_probable_letter(trimmed_list, used_letters)
+            if not letter: # if no possible letter use brute force
+                self.solve2()
             used_letters.append(letter)  # mark picked word as used
             letter_positions = self.unde_se_potriveste_litera(letter)
             if len(letter_positions) != 0:  # if there are positions where selected letter can be added then add it
@@ -141,7 +145,6 @@ class Joc:
             letter = letters[k]  # get a letter
             k += 1  # point to next letter
             letter_positions = self.unde_se_potriveste_litera(letter)
-
             if len(letter_positions) != 0:  # if there are positions where selected letter can be added then add it
                 self.add_letter(letter, letter_positions)
 
